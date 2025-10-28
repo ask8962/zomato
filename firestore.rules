@@ -1,0 +1,227 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for validation
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'ganukalp70@gmail.com';
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function validateEmail(email) {
+      return email.matches('.*@.*\\..*');
+    }
+    
+    function validatePhone(phone) {
+      return phone.matches('\\+?[0-9]{10,15}');
+    }
+    
+    // Users collection - users can only read/write their own data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      // Admin can read all users
+      allow read: if isAdmin();
+      
+      // Validation for user creation/updates
+      allow create, update: if isOwner(userId) && 
+        request.resource.data.keys().hasAll(['email', 'name', 'role']) &&
+        validateEmail(request.resource.data.email) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.role in ['customer', 'shopkeeper', 'delivery'] &&
+        (!('phone' in request.resource.data) || validatePhone(request.resource.data.phone));
+    }
+    
+    // Restaurants collection
+    match /restaurants/{restaurantId} {
+      // Only approved and active restaurants can be read by public
+      allow read: if resource.data.isApproved == true && resource.data.isActive == true;
+      // Restaurant owners can read their own restaurant (even if not approved)
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
+      // Admin can read all restaurants
+      allow read: if isAdmin();
+      
+      // Restaurant owners can create their own restaurant with validation
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.ownerId &&
+                   request.resource.data.ownerId is string &&
+                   request.resource.data.name is string &&
+                   request.resource.data.name.size() > 0 &&
+                   request.resource.data.description is string &&
+                   request.resource.data.address is string &&
+                   validatePhone(request.resource.data.phone) &&
+                   validateEmail(request.resource.data.email) &&
+                   request.resource.data.minimumOrder is number &&
+                   request.resource.data.minimumOrder >= 0 &&
+                   request.resource.data.deliveryFee is number &&
+                   request.resource.data.deliveryFee >= 0;
+      
+      // Restaurant owners can update their own restaurant (except approval status)
+      allow update: if isAuthenticated() && 
+                   request.auth.uid == resource.data.ownerId &&
+                   !('isApproved' in request.resource.data.diff(resource.data).affectedKeys()) &&
+                   (!('minimumOrder' in request.resource.data) || request.resource.data.minimumOrder >= 0) &&
+                   (!('deliveryFee' in request.resource.data) || request.resource.data.deliveryFee >= 0);
+      
+      // Admin can update any restaurant (including approval status)
+      allow update: if isAdmin();
+      
+      // Admin can delete restaurants
+      allow delete: if isAdmin();
+    }
+    
+    // Menu Items collection - FIXED: No longer public access
+    match /menuItems/{menuItemId} {
+      // Only menu items for approved restaurants can be read
+      allow read: if exists(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)) &&
+                 get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.isApproved == true &&
+                 get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.isActive == true;
+      
+      // Restaurant owners can create/update/delete their own menu items with validation
+      allow create, update, delete: if isAuthenticated() && 
+                                   exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)) &&
+                                   get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.ownerId == request.auth.uid &&
+                                   request.resource.data.name is string &&
+                                   request.resource.data.name.size() > 0 &&
+                                   request.resource.data.price is number &&
+                                   request.resource.data.price > 0 &&
+                                   request.resource.data.price <= 10000 &&
+                                   request.resource.data.preparationTime is number &&
+                                   request.resource.data.preparationTime > 0 &&
+                                   request.resource.data.preparationTime <= 180;
+      
+      // Admin can manage all menu items
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Orders collection
+    match /orders/{orderId} {
+      // Customers can read their own orders
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.customerId;
+      
+      // Restaurant owners can read orders for their restaurant
+      allow read: if isAuthenticated() && 
+                 exists(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)) &&
+                 get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId == request.auth.uid;
+      
+      // Delivery boys can read orders ready for pickup (no delivery boy assigned yet)
+      allow read: if isAuthenticated() && 
+                 resource.data.status == 'ready' &&
+                 !('deliveryBoyId' in resource.data);
+      
+      // Delivery boys can read their assigned orders
+      allow read: if isAuthenticated() && 
+                 'deliveryBoyId' in resource.data &&
+                 request.auth.uid == resource.data.deliveryBoyId;
+      
+      // Admin can read all orders
+      allow read: if isAdmin();
+      
+      // Customers can create orders with validation
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.customerId &&
+                   request.resource.data.customerId is string &&
+                   request.resource.data.totalAmount is number &&
+                   request.resource.data.totalAmount > 0 &&
+                   request.resource.data.totalAmount <= 50000 &&
+                   request.resource.data.items is list &&
+                   request.resource.data.items.size() > 0 &&
+                   request.resource.data.deliveryAddress is string &&
+                   request.resource.data.deliveryAddress.size() > 10 &&
+                   validatePhone(request.resource.data.customerPhone);
+      
+      // Customers can update their own orders (limited fields)
+      allow update: if isAuthenticated() && 
+                   request.auth.uid == resource.data.customerId &&
+                   request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notes', 'deliveryAddress']) &&
+                   (!('deliveryAddress' in request.resource.data) || request.resource.data.deliveryAddress.size() > 10);
+      
+      // Restaurant owners can update order status and assign delivery for their orders
+      allow update: if isAuthenticated() && 
+                   exists(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)) &&
+                   get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId == request.auth.uid &&
+                   request.resource.data.status in ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
+      
+      // Delivery boys can update their assigned orders (status and delivery times)
+      allow update: if isAuthenticated() && 
+                   'deliveryBoyId' in resource.data &&
+                   request.auth.uid == resource.data.deliveryBoyId &&
+                   request.resource.data.status in ['out_for_delivery', 'delivered'];
+      
+      // Admin can update any order
+      allow update: if isAdmin();
+      
+      // Admin can delete orders
+      allow delete: if isAdmin();
+    }
+    
+    // Reviews collection - FIXED: Restricted access
+    match /reviews/{reviewId} {
+      // Only reviews for approved restaurants can be read
+      allow read: if exists(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)) &&
+                 get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.isApproved == true;
+      
+      // Customers can create reviews for their own delivered orders with validation
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.customerId &&
+                   exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+                   get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.customerId == request.auth.uid &&
+                   get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'delivered' &&
+                   request.resource.data.rating is number &&
+                   request.resource.data.rating >= 1 &&
+                   request.resource.data.rating <= 5 &&
+                   request.resource.data.comment is string &&
+                   request.resource.data.comment.size() >= 10 &&
+                   request.resource.data.comment.size() <= 500;
+      
+      // Customers can update their own reviews
+      allow update: if isAuthenticated() && 
+                   request.auth.uid == resource.data.customerId &&
+                   request.resource.data.rating >= 1 &&
+                   request.resource.data.rating <= 5 &&
+                   request.resource.data.comment.size() >= 10 &&
+                   request.resource.data.comment.size() <= 500;
+      
+      // Admin can manage all reviews
+      allow update, delete: if isAdmin();
+    }
+    
+    // Cart collection (for persistent cart storage)
+    match /carts/{userId} {
+      // Users can only access their own cart
+      allow read, write: if isOwner(userId);
+    }
+
+    // Favorites collection
+    match /favorites/{favoriteId} {
+      // Customers can read their own favorites
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.customerId;
+      
+      // Customers can create their own favorites with validation
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.customerId &&
+                   request.resource.data.customerId is string &&
+                   exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)) &&
+                   get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.isApproved == true;
+      
+      // Customers can delete their own favorites
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.customerId;
+      
+      // Admin can manage all favorites
+      allow read, write: if isAdmin();
+    }
+    
+    // Rate limiting collection (for tracking API usage)
+    match /rateLimits/{userId} {
+      allow read, write: if isOwner(userId);
+      allow read: if isAdmin();
+    }
+  }
+} 

@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for Food Delivery App
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'ganukalp70@gmail.com';
+    }
+    
+    // Helper function to validate image file
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+             request.resource.contentType.matches('image/.*');
+    }
+    
+    // Restaurant images - public read, authenticated shopkeepers can upload
+    match /restaurants/{filename} {
+      // Anyone can read restaurant images (for public browsing)
+      allow read: if true;
+      
+      // Authenticated shopkeepers can upload their restaurant images
+      allow write: if request.auth != null && 
+                   isValidImage();
+      
+      // Admin can manage all restaurant images
+      allow write: if isAdmin();
+    }
+    
+    // Menu item images - public read, authenticated shopkeepers can upload
+    match /menuItems/{filename} {
+      // Anyone can read menu item images (for public browsing)
+      allow read: if true;
+      
+      // Authenticated shopkeepers can upload menu item images
+      allow write: if request.auth != null && 
+                   isValidImage();
+      
+      // Admin can manage all menu item images
+      allow write: if isAdmin();
+    }
+    
+    // User profile images - users can manage their own
+    match /profiles/{filename} {
+      // Public read for profile images
+      allow read: if true;
+      
+      // Authenticated users can upload their profile images
+      allow write: if request.auth != null && 
+                   isValidImage();
+      
+      // Admin can manage all profile images
+      allow write: if isAdmin();
+    }
+    
+    // Order images (receipts, delivery photos) - restricted access
+    match /orders/{filename} {
+      // Authenticated users can read order images
+      allow read: if request.auth != null;
+      
+      // Authenticated users can upload order images
+      allow write: if request.auth != null && 
+                   isValidImage();
+      
+      // Admin can manage all order images
+      allow write: if isAdmin();
+    }
+    
+    // Temporary uploads - users can upload temporarily
+    match /temp/{filename} {
+      // Users can upload to temp folder
+      allow write: if request.auth != null && 
+                   isValidImage();
+      
+      // Users can read temp files
+      allow read: if request.auth != null;
+      
+      // Admin can manage temp files
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+} 
