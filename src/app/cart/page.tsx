@@ -291,7 +291,7 @@ const CartPage = () => {
               
               <div className="p-8">
                 <div className="space-y-6">
-                  {cartData.items.map((item, index) => (
+                  {cartData.items.map((item) => (
                     <div key={item.id} className="group flex items-center space-x-6 p-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 border border-gray-100">
                       {/* Enhanced Item Image */}
                       <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">

@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Phone, Lock, ArrowLeft, Shield } from 'lucide-react';
 import { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db, setupRecaptcha } from '@/lib/firebase';
+import { db, setupRecaptcha } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
 const PhoneLoginPage = () => {

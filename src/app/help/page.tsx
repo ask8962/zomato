@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
-import { Search, ChevronDown, ChevronUp, HelpCircle, Phone, Mail, MessageCircle, ShoppingBag, User, CreditCard, Truck, Star } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, HelpCircle, Phone, Mail, MessageCircle, ShoppingBag, User, CreditCard, Truck } from 'lucide-react';
 
 const HelpPage = () => {
   const [searchTerm, setSearchTerm] = useState('');

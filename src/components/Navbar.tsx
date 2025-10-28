@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, ShoppingCart, User, LogOut, Settings, Bell, Heart, Search } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut, Settings, Bell, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -24,7 +24,7 @@ const Navbar = () => {
     try {
       await logout();
       toast.success('Logged out successfully');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to logout');
     }
   };

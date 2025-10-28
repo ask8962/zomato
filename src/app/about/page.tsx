@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Navbar from '@/components/Navbar';
-import { Heart, Users, Award, Zap, Target, Shield, TrendingUp, Globe } from 'lucide-react';
+import { Heart, Users, Award, Zap, Target, Shield, Globe } from 'lucide-react';
 
 const AboutPage = () => {
   return (

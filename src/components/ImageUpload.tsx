@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, AlertCircle, CheckCircle, Loader } from 'lucide-react';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { Upload, X, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 

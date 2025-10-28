@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { Search, Star, Clock, MapPin, Filter, Heart, ChefHat, Zap, Award, TrendingUp } from 'lucide-react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Restaurant } from '@/types';
 import toast from 'react-hot-toast';

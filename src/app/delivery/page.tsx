@@ -7,18 +7,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   Bike,
   Package, 
-  Clock, 
   CheckCircle, 
-  TrendingUp,
   MapPin,
   Phone,
   DollarSign,
-  Navigation,
   ToggleLeft,
   ToggleRight,
   Eye,
   Star,
-  Award,
   Hash
 } from 'lucide-react';
 import { 

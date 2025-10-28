@@ -103,7 +103,6 @@ const CheckoutPage = () => {
       }
 
       // 2. Validate each menu item and prices
-      const menuItemIds = cartData.items.map(item => item.menuItemId);
       const menuQuery = query(
         collection(db, 'menuItems'),
         where('restaurantId', '==', cartData.restaurant.id)

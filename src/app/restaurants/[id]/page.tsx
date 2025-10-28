@@ -11,7 +11,6 @@ import {
   Clock, 
   MapPin, 
   ShoppingCart,
-  ArrowLeft,
   Heart
 } from 'lucide-react';
 import { 

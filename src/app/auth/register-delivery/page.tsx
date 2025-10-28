@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Bike, Car, Hash } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Bike, Hash } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const RegisterDeliveryPage = () => {

@@ -14,7 +14,7 @@ import {
   RecaptchaVerifier
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db, googleProvider, setupRecaptcha } from '@/lib/firebase';
+import { auth, db, googleProvider } from '@/lib/firebase';
 import { User } from '@/types';
 
 interface AuthContextType {

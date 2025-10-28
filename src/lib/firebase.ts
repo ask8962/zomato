@@ -38,7 +38,7 @@ try {
     // Already initialized or server-side
     firestoreInstance = getFirestore(app);
   }
-} catch (error) {
+} catch (_error) {
   // Fallback if already initialized
   console.warn('Firestore already initialized, using existing instance');
   firestoreInstance = getFirestore(app);

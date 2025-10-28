@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { 
-  ArrowLeft, 
+  ArrowLeft,
   User, 
   Phone, 
   MapPin, 
@@ -18,7 +18,6 @@ import {
   RefreshCw,
   XCircle,
   Star,
-  MessageSquare,
   X
 } from 'lucide-react';
 import { doc, getDoc, onSnapshot, addDoc, collection, query, where, getDocs } from 'firebase/firestore';

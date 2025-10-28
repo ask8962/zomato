@@ -14,26 +14,19 @@ import {
   Eye,
   BarChart3,
   DollarSign,
-  Calendar,
   Activity,
   UserCheck,
   UserX,
-  Mail,
   Phone,
   MapPin,
   Clock,
-  Star,
   AlertTriangle,
-  Filter,
   Search,
   Download,
   RefreshCw,
-  Settings,
-  Shield,
-  Ban,
-  Edit
+  Ban
 } from 'lucide-react';
-import { collection, getDocs, doc, updateDoc, query, where, onSnapshot, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, query, onSnapshot, orderBy, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User, Restaurant, Order } from '@/types';
 import toast from 'react-hot-toast';

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart, Star, Clock, MapPin, Trash2, Search, Filter, ChefHat } from 'lucide-react';
+import { Heart, Star, Clock, MapPin, Search, ChefHat } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Restaurant } from '@/types';

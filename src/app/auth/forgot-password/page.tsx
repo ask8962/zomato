@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -13,7 +12,6 @@ const ForgotPasswordPage = () => {
   const [emailSent, setEmailSent] = useState(false);
   
   const { resetPassword } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

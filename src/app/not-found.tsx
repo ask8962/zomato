@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import { House, Search, ArrowLeft, Heart, MapPin } from 'lucide-react';
+import { House, Search, Heart, MapPin } from 'lucide-react';
 
 const NotFoundPage = () => {
   return (
