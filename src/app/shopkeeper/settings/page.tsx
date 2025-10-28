@@ -533,7 +533,8 @@ const RestaurantSettingsPage = () => {
                           minimumOrder: restaurant.minimumOrder.toString(),
                           deliveryFee: restaurant.deliveryFee.toString(),
                           openingHours: restaurant.openingHours || '09:00',
-                          closingHours: restaurant.closingHours || '22:00'
+                          closingHours: restaurant.closingHours || '22:00',
+                          image: restaurant.image || ''
                         });
                       }
                     }}
