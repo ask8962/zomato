@@ -7,14 +7,13 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBrs0FykwcxJjO9thf81ultOoyCu1RGdZA",
-  authDomain: "brandvibe-ind.firebaseapp.com",
-  databaseURL: "https://brandvibe-ind-default-rtdb.firebaseio.com",
-  projectId: "brandvibe-ind",
-  storageBucket: "brandvibe-ind.firebasestorage.app",
-  messagingSenderId: "832715215529",
-  appId: "1:832715215529:web:399349aee5d6d9e50ccfb8",
-  measurementId: "G-PLQ1N40K9G"
+  apiKey: "AIzaSyC17NmcBff1m3hAj6IPSwn7yzsXvALYekg",
+  authDomain: "girlfriend-find.firebaseapp.com",
+  projectId: "girlfriend-find",
+  storageBucket: "girlfriend-find.firebasestorage.app",
+  messagingSenderId: "927701322417",
+  appId: "1:927701322417:web:a5574ca64cf1b502c83090",
+  measurementId: "G-DKGMZEVDWE"
 };
 
 // Initialize Firebase (prevent multiple initializations)
