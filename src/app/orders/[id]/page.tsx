@@ -32,10 +32,9 @@ interface OrderDetailsPageProps {
   }>;
 }
 
-const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
+const OrderDetailsPageContent = ({ params }: { params: { id: string } }) => {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
-  const resolvedParams = use(params);
   const [order, setOrder] = useState<Order | null>(null);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
@@ -54,16 +53,16 @@ const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
       return;
     }
 
-    if (user && resolvedParams.id) {
+    if (user && params.id) {
       fetchOrderDetails();
       setupRealTimeListener();
     }
-  }, [user, loading, resolvedParams.id, router]);
+  }, [user, loading, params.id, router]);
 
   const fetchOrderDetails = async () => {
     try {
       setLoadingOrder(true);
-      const orderDoc = await getDoc(doc(db, 'orders', resolvedParams.id));
+      const orderDoc = await getDoc(doc(db, 'orders', params.id));
       
       if (orderDoc.exists()) {
         const orderData = { id: orderDoc.id, ...orderDoc.data() } as Order;
@@ -110,9 +109,9 @@ const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
   };
 
   const setupRealTimeListener = () => {
-    if (!resolvedParams.id) return;
+    if (!params.id) return;
 
-    const unsubscribe = onSnapshot(doc(db, 'orders', resolvedParams.id), (doc) => {
+    const unsubscribe = onSnapshot(doc(db, 'orders', params.id), (doc) => {
       if (doc.exists()) {
         const orderData = { id: doc.id, ...doc.data() } as Order;
         setOrder(orderData);
@@ -742,6 +741,12 @@ const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
       )}
     </div>
   );
+};
+
+const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
+  const unwrappedParams = use(params);
+  
+  return <OrderDetailsPageContent params={unwrappedParams} />;
 };
 
 export default OrderDetailsPage; 

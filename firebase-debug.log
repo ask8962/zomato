@@ -1,0 +1,53 @@
+[debug] [2025-10-28T13:25:25.345Z] ----------------------------------------------------------------------
+[debug] [2025-10-28T13:25:25.349Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\ganuk\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-10-28T13:25:25.350Z] CLI Version:   14.16.0
+[debug] [2025-10-28T13:25:25.350Z] Platform:      win32
+[debug] [2025-10-28T13:25:25.350Z] Node Version:  v22.16.0
+[debug] [2025-10-28T13:25:25.351Z] Time:          Tue Oct 28 2025 18:55:25 GMT+0530 (India Standard Time)
+[debug] [2025-10-28T13:25:25.351Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-28T13:25:25.355Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-10-28T13:25:25.916Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-28T13:25:25.917Z] > authorizing via signed-in user (ganukalp70@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\ganuk\Documents\first website\food-delivery-app
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[debug] [2025-10-28T13:25:26.574Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-10-28T13:25:26.575Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-10-28T13:25:48.610Z] Using project from CLI flag: ruralconnect-3qihc
+[debug] [2025-10-28T13:25:48.611Z] Checked if tokens are valid: false, expires at: 1757853439061
+[debug] [2025-10-28T13:25:48.611Z] Checked if tokens are valid: false, expires at: 1757853439061
+[debug] [2025-10-28T13:25:48.612Z] > refreshing access token with scopes: []
+[debug] [2025-10-28T13:25:48.615Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-10-28T13:25:48.615Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-28T13:25:48.878Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-10-28T13:25:48.878Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-28T13:25:48.890Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/ruralconnect-3qihc [none]
+[debug] [2025-10-28T13:25:49.613Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/ruralconnect-3qihc 403
+[debug] [2025-10-28T13:25:49.613Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/ruralconnect-3qihc {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2025-10-28T13:25:49.614Z] Request to https://firebase.googleapis.com/v1beta1/projects/ruralconnect-3qihc had HTTP Error: 403, The caller does not have permission
+[debug] [2025-10-28T13:25:49.827Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/ruralconnect-3qihc had HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\ganuk\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:52:12)
+    at RetryOperation._fn (C:\Users\ganuk\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:312:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to get Firebase project ruralconnect-3qihc. Please make sure the project exists and your account has permission to access it.

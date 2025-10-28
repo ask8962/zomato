@@ -2,7 +2,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, RecaptchaVerifier } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
@@ -21,21 +21,30 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Enable offline persistence for Firestore (only in browser)
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // Multiple tabs open, persistence can only be enabled in one tab at a time
-      console.warn('Firebase persistence: Multiple tabs open, using online mode');
-    } else if (err.code === 'unimplemented') {
-      // The current browser doesn't support persistence
-      console.warn('Firebase persistence not supported in this browser');
-    }
-  });
+// Initialize Firestore with modern cache settings (replaces deprecated enableIndexedDbPersistence)
+// This provides offline persistence and multi-tab support automatically
+let firestoreInstance;
+try {
+  if (typeof window !== 'undefined' && getApps().length === 1) {
+    // First initialization - use modern persistent cache
+    firestoreInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } else {
+    // Already initialized or server-side
+    firestoreInstance = getFirestore(app);
+  }
+} catch (error) {
+  // Fallback if already initialized
+  console.warn('Firestore already initialized, using existing instance');
+  firestoreInstance = getFirestore(app);
 }
+
+export const db = firestoreInstance;
 
 // Initialize Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
