@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -26,12 +26,12 @@ import { Order, Review } from '@/types';
 import toast from 'react-hot-toast';
 
 interface OrderDetailsPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
-const OrderDetailsPageContent = ({ params }: { params: { id: string } }) => {
+const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -740,12 +740,6 @@ const OrderDetailsPageContent = ({ params }: { params: { id: string } }) => {
       )}
     </div>
   );
-};
-
-const OrderDetailsPage = ({ params }: OrderDetailsPageProps) => {
-  const unwrappedParams = use(params);
-  
-  return <OrderDetailsPageContent params={unwrappedParams} />;
 };
 
 export default OrderDetailsPage; 
