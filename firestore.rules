@@ -149,6 +149,14 @@ service cloud.firestore {
                    get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId == request.auth.uid &&
                    request.resource.data.status in ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
       
+      // Delivery boys can accept ready orders (assign themselves)
+      allow update: if isAuthenticated() && 
+                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'delivery' &&
+                   resource.data.status == 'ready' &&
+                   !('deliveryBoyId' in resource.data) &&
+                   request.resource.data.deliveryBoyId == request.auth.uid &&
+                   request.resource.data.status == 'out_for_delivery';
+      
       // Delivery boys can update their assigned orders (status and delivery times)
       allow update: if isAuthenticated() && 
                    'deliveryBoyId' in resource.data &&
