@@ -34,7 +34,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+    <nav aria-label="Primary" className={`sticky top-0 z-50 transition-all duration-300 ${
       isScrolled 
         ? 'bg-white/90 backdrop-blur-md shadow-2xl border-b border-orange-100' 
         : 'bg-white shadow-lg'

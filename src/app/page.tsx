@@ -3,7 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import dynamic from 'next/dynamic';
 import { Clock, MapPin, Star, Truck, Heart, Shield, Users, Zap, ChefHat, Award, Store, Bike } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import { RatingStars } from '@/components/ui/RatingStars';
+
+const LazyTestimonials = dynamic(() => import('@/components/ReviewsSection').then(m => m.default), { ssr: false, loading: () => <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20" aria-busy="true" aria-live="polite"><div className="h-40 skeleton rounded-2xl" /></div>});
 
 export default function Home() {
   return (
@@ -93,19 +99,19 @@ export default function Home() {
         </div>
         
         {/* Floating Elements */}
-        <div className="absolute top-20 left-10 animate-bounce">
+        <div className="absolute top-20 left-10 animate-bounce" aria-hidden>
           <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            🍕
+            <span role="img" aria-label="">🍕</span>
           </div>
         </div>
-        <div className="absolute top-32 right-20 animate-bounce" style={{ animationDelay: '1s' }}>
+        <div className="absolute top-32 right-20 animate-bounce" style={{ animationDelay: '1s' }} aria-hidden>
           <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            🍔
+            <span role="img" aria-label="">🍔</span>
           </div>
         </div>
-        <div className="absolute bottom-20 left-20 animate-bounce" style={{ animationDelay: '2s' }}>
+        <div className="absolute bottom-20 left-20 animate-bounce" style={{ animationDelay: '2s' }} aria-hidden>
           <div className="w-14 h-14 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            🍜
+            <span role="img" aria-label="">🍜</span>
           </div>
         </div>
       </section>
