@@ -1,0 +1,67 @@
+# Page snapshot
+
+```yaml
+- generic [active]:
+  - alert [ref=e1]
+  - dialog "Server Error" [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - navigation [ref=e8]:
+          - button "previous" [disabled] [ref=e9]:
+            - img "previous" [ref=e10]
+          - button "next" [disabled] [ref=e12]:
+            - img "next" [ref=e13]
+          - generic [ref=e15]: 1 of 1 error
+          - generic [ref=e16]:
+            - text: Next.js (14.2.18) is outdated
+            - link "(learn more)" [ref=e18] [cursor=pointer]:
+              - /url: https://nextjs.org/docs/messages/version-staleness
+        - heading "Server Error" [level=1] [ref=e19]
+        - paragraph [ref=e20]: "Error: Cannot find module './859.js' Require stack: - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\.next\\server\\webpack-runtime.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\.next\\server\\app\\auth\\login\\page.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\require.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\load-components.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\build\\utils.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\lib\\router-server.js - C:\\Users\\ganuk\\Documents\\first website\\food-delivery-app\\node_modules\\next\\dist\\server\\lib\\start-server.js"
+        - generic [ref=e21]: This error happened while generating the page. Any console logs will be displayed in the terminal window.
+      - generic [ref=e22]:
+        - heading "Call Stack" [level=2] [ref=e23]
+        - group [ref=e24]:
+          - generic "Next.js" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+            - img [ref=e28]
+            - text: Next.js
+        - generic [ref=e33]:
+          - heading "TracingChannel.traceSync" [level=3] [ref=e34]
+          - generic [ref=e36]: node:diagnostics_channel (322:14)
+        - group [ref=e37]:
+          - generic "Next.js" [ref=e38] [cursor=pointer]:
+            - img [ref=e39]
+            - img [ref=e41]
+            - text: Next.js
+        - generic [ref=e46]:
+          - heading "Array.reduce" [level=3] [ref=e47]
+          - generic [ref=e49]: <anonymous>
+        - group [ref=e50]:
+          - generic "Next.js" [ref=e51] [cursor=pointer]:
+            - img [ref=e52]
+            - img [ref=e54]
+            - text: Next.js
+        - generic [ref=e59]:
+          - heading "Array.map" [level=3] [ref=e60]
+          - generic [ref=e62]: <anonymous>
+        - group [ref=e63]:
+          - generic "Next.js" [ref=e64] [cursor=pointer]:
+            - img [ref=e65]
+            - img [ref=e67]
+            - text: Next.js
+        - generic [ref=e72]:
+          - heading "<unknown>" [level=3] [ref=e73]
+          - generic [ref=e75]: file:///C:/Users/ganuk/Documents/first%20website/food-delivery-app/.next/server/pages/_document.js (1:590)
+        - generic [ref=e76]:
+          - heading "Object.<anonymous>" [level=3] [ref=e77]
+          - generic [ref=e79]: file:///C:/Users/ganuk/Documents/first%20website/food-delivery-app/.next/server/pages/_document.js (1:632)
+        - generic [ref=e80]:
+          - heading "TracingChannel.traceSync" [level=3] [ref=e81]
+          - generic [ref=e83]: node:diagnostics_channel (322:14)
+        - group [ref=e84]:
+          - generic "Next.js" [ref=e85] [cursor=pointer]:
+            - img [ref=e86]
+            - img [ref=e88]
+            - text: Next.js
+```
