@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
-import { MapPin, Phone, User, CreditCard, Truck, AlertTriangle } from 'lucide-react';
-import { addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { MapPin, Phone, User, CreditCard, Truck, AlertTriangle, Tag, X, CheckCircle, Loader2 } from 'lucide-react';
+import { addDoc, collection, doc, getDoc, getDocs, query, where, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Restaurant, MenuItem } from '@/types';
+import { Restaurant, MenuItem, PromoCode } from '@/types';
 import toast from 'react-hot-toast';
 
 interface CartItem {
@@ -27,7 +27,7 @@ interface CartData {
 const CheckoutPage = () => {
   const router = useRouter();
   const { user } = useAuth();
-  
+
   const [cartData, setCartData] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(false);
   const [validatingCart, setValidatingCart] = useState(true);
@@ -40,6 +40,12 @@ const CheckoutPage = () => {
     notes: ''
   });
 
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+
   // Input validation functions
   const validatePhone = (phone: string): boolean => {
     return /^\+?[0-9]{10,15}$/.test(phone.replace(/\s/g, ''));
@@ -51,6 +57,91 @@ const CheckoutPage = () => {
 
   const validateDeliveryAddress = (address: string): boolean => {
     return address.trim().length >= 10 && address.trim().length <= 500;
+  };
+
+  // Promo code validation and application
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setPromoError('Please enter a promo code');
+      return;
+    }
+
+    setPromoLoading(true);
+    setPromoError('');
+
+    try {
+      const promoQuery = query(
+        collection(db, 'promoCodes'),
+        where('code', '==', promoCode.toUpperCase().trim())
+      );
+
+      const snapshot = await getDocs(promoQuery);
+
+      if (snapshot.empty) {
+        setPromoError('Invalid promo code');
+        setPromoLoading(false);
+        return;
+      }
+
+      const promoDoc = snapshot.docs[0];
+      const promo = {
+        id: promoDoc.id,
+        ...promoDoc.data(),
+        createdAt: promoDoc.data().createdAt?.toDate() || new Date(),
+        expiryDate: promoDoc.data().expiryDate?.toDate() || new Date()
+      } as PromoCode;
+
+      // Validation checks
+      if (!promo.isActive) {
+        setPromoError('This promo code is no longer active');
+        setPromoLoading(false);
+        return;
+      }
+
+      if (new Date(promo.expiryDate) < new Date()) {
+        setPromoError('This promo code has expired');
+        setPromoLoading(false);
+        return;
+      }
+
+      if (promo.usedCount >= promo.usageLimit) {
+        setPromoError('This promo code has reached its usage limit');
+        setPromoLoading(false);
+        return;
+      }
+
+      if (cartData && promo.minOrderAmount > cartData.total) {
+        setPromoError(`Minimum order amount is ₹${promo.minOrderAmount}`);
+        setPromoLoading(false);
+        return;
+      }
+
+      setAppliedPromo(promo);
+      setPromoError('');
+      toast.success(`Promo code "${promo.code}" applied!`);
+    } catch (error) {
+      console.error('Error applying promo code:', error);
+      setPromoError('Failed to apply promo code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoError('');
+  };
+
+  const calculateDiscount = (): number => {
+    if (!appliedPromo || !cartData) return 0;
+
+    if (appliedPromo.discountType === 'percentage') {
+      const discount = (cartData.total * appliedPromo.discountValue) / 100;
+      return appliedPromo.maxDiscount ? Math.min(discount, appliedPromo.maxDiscount) : discount;
+    }
+
+    return Math.min(appliedPromo.discountValue, cartData.total);
   };
 
   useEffect(() => {
@@ -107,7 +198,7 @@ const CheckoutPage = () => {
         collection(db, 'menuItems'),
         where('restaurantId', '==', cartData.restaurant.id)
       );
-      
+
       const menuSnapshot = await getDocs(menuQuery);
       const currentMenuItems = new Map();
       menuSnapshot.docs.forEach(doc => {
@@ -119,7 +210,7 @@ const CheckoutPage = () => {
 
       for (const cartItem of cartData.items) {
         const currentMenuItem = currentMenuItems.get(cartItem.menuItemId);
-        
+
         if (!currentMenuItem) {
           errors.push(`Menu item "${cartItem.menuItem.name}" is no longer available`);
           continue;
@@ -171,12 +262,12 @@ const CheckoutPage = () => {
           total: recalculatedTotal,
           restaurant: { ...cartData.restaurant, ...currentRestaurant }
         };
-        
+
         setCartData(validatedCartData);
-        
+
         // Update localStorage with validated data
         localStorage.setItem('cart', JSON.stringify(validatedCartData));
-        
+
         // Pre-fill form with user data
         if (user) {
           setOrderForm(prev => ({
@@ -205,7 +296,7 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!cartData || !user) return;
 
     // Enhanced validation
@@ -255,19 +346,26 @@ const CheckoutPage = () => {
 
         const currentPrice = menuItemDoc.data()?.price;
         finalTotal += currentPrice * item.quantity;
-        
+
         validatedItems.push({
           ...item,
           price: currentPrice // Use current server price
         });
       }
 
+      // Calculate discount if promo applied
+      const promoDiscount = appliedPromo ? calculateDiscount() : 0;
+
       const orderData = {
         customerId: user.id,
         restaurantId: cartData.restaurant.id,
         items: validatedItems,
-        totalAmount: finalTotal + cartData.restaurant.deliveryFee,
+        totalAmount: finalTotal + cartData.restaurant.deliveryFee - promoDiscount,
+        subtotal: finalTotal,
         deliveryFee: cartData.restaurant.deliveryFee,
+        discount: promoDiscount,
+        promoCode: appliedPromo?.code || null,
+        promoCodeId: appliedPromo?.id || null,
         status: 'pending' as const,
         deliveryAddress: sanitizeInput(orderForm.deliveryAddress),
         customerPhone: sanitizeInput(orderForm.customerPhone),
@@ -280,13 +378,20 @@ const CheckoutPage = () => {
       };
 
       const docRef = await addDoc(collection(db, 'orders'), orderData);
-      
+
+      // Increment promo code usage count
+      if (appliedPromo) {
+        await updateDoc(doc(db, 'promoCodes', appliedPromo.id), {
+          usedCount: appliedPromo.usedCount + 1
+        });
+      }
+
       // Clear cart from localStorage
       localStorage.removeItem('cart');
-      
+
       toast.success('Order placed successfully!');
       router.push(`/orders/${docRef.id}`);
-      
+
     } catch (error) {
       console.error('Error placing order:', error);
       toast.error('Failed to place order. Please try again.');
@@ -360,12 +465,13 @@ const CheckoutPage = () => {
 
   const subtotal = cartData.total;
   const deliveryFee = cartData.restaurant.deliveryFee;
-  const total = subtotal + deliveryFee;
+  const discount = calculateDiscount();
+  const total = subtotal + deliveryFee - discount;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
@@ -402,7 +508,7 @@ const CheckoutPage = () => {
                   <User className="w-5 h-5 mr-2" />
                   Customer Details
                 </h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -420,7 +526,7 @@ const CheckoutPage = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-1">
                       Phone Number *
@@ -448,7 +554,7 @@ const CheckoutPage = () => {
                   <MapPin className="w-5 h-5 mr-2" />
                   Delivery Address
                 </h2>
-                
+
                 <div>
                   <label htmlFor="deliveryAddress" className="block text-sm font-medium text-gray-700 mb-1">
                     Complete Address *
@@ -477,7 +583,7 @@ const CheckoutPage = () => {
                   <CreditCard className="w-5 h-5 mr-2" />
                   Payment Method
                 </h2>
-                
+
                 <div className="space-y-3">
                   <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
                     <input
@@ -496,7 +602,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
                   </label>
-                  
+
                   <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 opacity-50">
                     <input
                       type="radio"
@@ -519,7 +625,7 @@ const CheckoutPage = () => {
               {/* Order Notes */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold mb-4">Special Instructions</h2>
-                
+
                 <div>
                   <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
                     Notes for Restaurant (Optional)
@@ -546,7 +652,7 @@ const CheckoutPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-              
+
               {/* Order Items */}
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                 {cartData.items.map(item => (
@@ -578,10 +684,68 @@ const CheckoutPage = () => {
                   <span>Delivery Fee</span>
                   <span>₹{deliveryFee}</span>
                 </div>
+                {appliedPromo && discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center">
+                      <Tag className="w-3 h-3 mr-1" />
+                      Discount ({appliedPromo.code})
+                    </span>
+                    <span>-₹{discount.toFixed(0)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>Total</span>
-                  <span>₹{total}</span>
+                  <span>₹{total.toFixed(0)}</span>
                 </div>
+              </div>
+
+              {/* Promo Code Section */}
+              <div className="mt-4 border-t pt-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <Tag className="w-4 h-4 mr-1" />
+                  Promo Code
+                </h3>
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between bg-green-50 p-3 rounded-md">
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      <span className="font-mono font-medium text-green-800">{appliedPromo.code}</span>
+                      <span className="text-sm text-green-600 ml-2">
+                        ({appliedPromo.discountType === 'percentage' ? `${appliedPromo.discountValue}% off` : `₹${appliedPromo.discountValue} off`})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removePromo}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        placeholder="Enter code"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:ring-orange-500 focus:border-orange-500 font-mono uppercase text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        disabled={promoLoading}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-r-md hover:bg-orange-700 disabled:bg-gray-400 text-sm"
+                      >
+                        {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="text-xs text-red-600">{promoError}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Estimated Delivery */}

@@ -99,4 +99,19 @@ export interface Review {
   rating: number;
   comment: string;
   createdAt: Date;
+}
+
+export interface PromoCode {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'flat';
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscount?: number;
+  usageLimit: number;
+  usedCount: number;
+  expiryDate: Date;
+  isActive: boolean;
+  createdAt: Date;
+  createdBy: string;
 } 

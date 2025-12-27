@@ -231,5 +231,26 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
       allow read: if isAdmin();
     }
+    
+    // Promo Codes collection - Admin managed, customer readable
+    match /promoCodes/{promoId} {
+      // All authenticated users can read active promo codes
+      allow read: if isAuthenticated();
+      
+      // Only admin can create, update, delete promo codes
+      allow create: if isAdmin() &&
+                   request.resource.data.code is string &&
+                   request.resource.data.code.size() >= 3 &&
+                   request.resource.data.code.size() <= 20 &&
+                   request.resource.data.discountType in ['percentage', 'flat'] &&
+                   request.resource.data.discountValue is number &&
+                   request.resource.data.discountValue > 0 &&
+                   request.resource.data.minOrderAmount is number &&
+                   request.resource.data.minOrderAmount >= 0 &&
+                   request.resource.data.usageLimit is number &&
+                   request.resource.data.usageLimit > 0;
+      
+      allow update, delete: if isAdmin();
+    }
   }
 } 

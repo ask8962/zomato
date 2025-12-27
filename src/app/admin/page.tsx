@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import { 
-  Users, 
-  Store, 
-  ShoppingBag, 
-  TrendingUp, 
-  CheckCircle, 
+import {
+  Users,
+  Store,
+  ShoppingBag,
+  TrendingUp,
+  CheckCircle,
   XCircle,
   Eye,
   BarChart3,
@@ -24,7 +24,8 @@ import {
   Search,
   Download,
   RefreshCw,
-  Ban
+  Ban,
+  Tag
 } from 'lucide-react';
 import { collection, doc, updateDoc, query, onSnapshot, orderBy, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -34,7 +35,7 @@ import toast from 'react-hot-toast';
 const AdminDashboard = () => {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
-  
+
   // Enhanced state management
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
     completedOrders: 0,
     cancelledOrders: 0
   });
-  
+
   const [pendingRestaurants, setPendingRestaurants] = useState<Restaurant[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -84,7 +85,7 @@ const AdminDashboard = () => {
     const restaurantsUnsubscribe = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
       const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       setPendingRestaurants(restaurants.filter(r => !r.isApproved));
-      
+
       setStats(prev => ({
         ...prev,
         totalRestaurants: restaurants.length,
@@ -99,10 +100,10 @@ const AdminDashboard = () => {
       (snapshot) => {
         const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
         setRecentOrders(orders.slice(0, 15));
-        
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const todayOrders = orders.filter(order => {
           const orderDate = new Date(order.orderDate);
           orderDate.setHours(0, 0, 0, 0);
@@ -130,12 +131,12 @@ const AdminDashboard = () => {
     const usersUnsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
       const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
       setAllUsers(users);
-      
+
       const customers = users.filter(u => u.role === 'customer');
       const shopkeepers = users.filter(u => u.role === 'shopkeeper');
-      
-      setStats(prev => ({ 
-        ...prev, 
+
+      setStats(prev => ({
+        ...prev,
         totalUsers: users.length,
         totalCustomers: customers.length,
         totalShopkeepers: shopkeepers.length
@@ -159,7 +160,7 @@ const AdminDashboard = () => {
     }
 
     if (searchTerm) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -259,7 +260,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Enhanced Header */}
         <div className="mb-8 flex justify-between items-center">
@@ -391,16 +392,23 @@ const AdminDashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
+                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? 'border-orange-500 text-orange-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="w-4 h-4 mr-2" />
                   {tab.label}
                 </button>
               ))}
+              {/* Promo Codes - Links to separate page */}
+              <a
+                href="/admin/promo-codes"
+                className="flex items-center py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              >
+                <Tag className="w-4 h-4 mr-2" />
+                Promo Codes
+              </a>
             </nav>
           </div>
 
@@ -409,7 +417,7 @@ const AdminDashboard = () => {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900">Platform Overview</h3>
-                
+
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <button
@@ -420,7 +428,7 @@ const AdminDashboard = () => {
                     <h4 className="font-medium text-gray-900">Manage Users</h4>
                     <p className="text-sm text-gray-600">View and manage all platform users</p>
                   </button>
-                  
+
                   <button
                     onClick={() => setActiveTab('restaurants')}
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
@@ -429,7 +437,7 @@ const AdminDashboard = () => {
                     <h4 className="font-medium text-gray-900">Restaurant Approvals</h4>
                     <p className="text-sm text-gray-600">{stats.pendingApprovals} pending approvals</p>
                   </button>
-                  
+
                   <button
                     onClick={() => setActiveTab('orders')}
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
@@ -457,11 +465,10 @@ const AdminDashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span className={`px-2 py-1 text-xs rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {order.status}
                         </span>
                       </div>
@@ -552,11 +559,10 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                              user.role === 'shopkeeper' ? 'bg-blue-100 text-blue-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
+                            <span className={`px-2 py-1 text-xs rounded-full ${user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                user.role === 'shopkeeper' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-green-100 text-green-800'
+                              }`}>
                               {user.role}
                             </span>
                           </td>
@@ -751,12 +757,11 @@ const AdminDashboard = () => {
                             {formatCurrency(order.totalAmount)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                              order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                              order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
+                            <span className={`px-2 py-1 text-xs rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                              }`}>
                               {order.status}
                             </span>
                           </td>
@@ -783,7 +788,7 @@ const AdminDashboard = () => {
             {activeTab === 'analytics' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900">Platform Analytics</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gray-50 p-6 rounded-lg">
                     <h4 className="font-medium text-gray-900 mb-4">Revenue Trends</h4>
@@ -873,11 +878,10 @@ const AdminDashboard = () => {
                     {selectedUser.name || 'No name provided'}
                   </h4>
                   <p className="text-gray-600">{selectedUser.email}</p>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    selectedUser.role === 'admin' ? 'bg-red-100 text-red-800' :
-                    selectedUser.role === 'shopkeeper' ? 'bg-blue-100 text-blue-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
+                  <span className={`px-2 py-1 text-xs rounded-full ${selectedUser.role === 'admin' ? 'bg-red-100 text-red-800' :
+                      selectedUser.role === 'shopkeeper' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                    }`}>
                     {selectedUser.role}
                   </span>
                 </div>
